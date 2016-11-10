@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
 {
     public static final String HOTEL =  "hotel";
     private static final int REQUEST_CODE_ADD = 88;
+    private static final int REQUEST_CODE_EDIT = 99;
+    int itemPos;
     ArrayList<Hotel> mList = new ArrayList<>();
     HotelAdapter mAdapter;
     @Override
@@ -115,6 +117,46 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
     }
 
     @Override
+    public void doEdit(int pos)
+    {
+        itemPos = pos;
+        Intent intent = new Intent(this, InputActivity.class);
+        intent.putExtra(HOTEL, mList.get(pos));
+        startActivityForResult(intent, REQUEST_CODE_EDIT);
+    }
+
+    @Override
+    public void doDelete(int pos)
+    {
+        itemPos = pos;
+        final Hotel hotel = mList.get(pos);
+        mList.remove(itemPos);
+        mAdapter.notifyDataSetChanged();
+
+        Snackbar.make(findViewById(R.id.fab),hotel.judul+" Terhapus",Snackbar.LENGTH_LONG)
+        .setAction("UNDO", new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mList.add(itemPos,hotel);
+            mAdapter.notifyDataSetChanged();
+        }
+    }).show();
+    }
+
+
+
+    @Override
+    public void doFav(int pos)
+    {
+
+    }
+
+    @Override
+    public void doShare(int pos) {
+
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
@@ -122,6 +164,13 @@ public class MainActivity extends AppCompatActivity implements HotelAdapter.IHot
         {
             Hotel hotel = (Hotel) data.getSerializableExtra(HOTEL);
             mList.add(hotel);
+            mAdapter.notifyDataSetChanged();
+        }
+        else if (requestCode == REQUEST_CODE_EDIT  && resultCode == RESULT_OK)
+        {
+            Hotel hotel = (Hotel) data.getSerializableExtra(HOTEL);
+            mList.remove(itemPos);
+            mList.add(itemPos,hotel);
             mAdapter.notifyDataSetChanged();
         }
     }
